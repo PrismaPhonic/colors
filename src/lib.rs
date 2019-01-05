@@ -5,7 +5,7 @@ use std::error::Error;
 use std::io::Write;
 use std::process::Command;
 use std::{env, fs};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{Color, ColorChoice, NoColor, ColorSpec, StandardStream, WriteColor};
 
 pub struct Config {
     pub filename: String,
@@ -61,9 +61,13 @@ fn gen_blocks_line(colors: &Vec<Color>) {
     for color in colors {
         let mut stdout = StandardStream::stdout(ColorChoice::Always);
         stdout
-            .set_color(ColorSpec::new().set_fg(Some(*color)))
+            .set_color(ColorSpec::new().set_bg(Some(*color)))
             .unwrap();
-        write!(&mut stdout, "██████    ").unwrap();
+        write!(&mut stdout, "      ").unwrap();
+        stdout
+            .set_color(&ColorSpec::new())
+            .unwrap();
+        write!(&mut stdout, "   ").unwrap();
     }
 }
 
@@ -71,7 +75,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let colors = gen_colors(&config.filename);
 
     println!("Here are your colors:");
-        for _ in 0..4 {
+        for _ in 0..3 {
             gen_blocks_line(&colors);
             println!("");
         }
