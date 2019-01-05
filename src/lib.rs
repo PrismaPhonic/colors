@@ -1,10 +1,11 @@
 extern crate regex;
+extern crate termcolor;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::error::Error;
 use std::{fs, env};
+use std::io::Write;
 use std::process::Command;
 use regex::Regex;
-
-pub struct Color(i32, i32, i32);
 
 pub struct Config {
     pub filename: String,
@@ -23,7 +24,7 @@ impl Config {
     }
 }
 
-fn gen_colors(filename: &str) -> Vec<String> {
+fn gen_colors(filename: &str) -> Vec<Color> {
     let output = Command::new("magick")
         .arg("convert")
         .arg(filename)
@@ -38,20 +39,28 @@ fn gen_colors(filename: &str) -> Vec<String> {
         .expect("failed to execute process");
 
     let mut results = Vec::new();
-    let color = Regex::new(r"#.{6}").unwrap();
+    let color = Regex::new(r"rgb.*").unwrap();
+    let rgb_num = Regex::new(r"\d+").unwrap();
     for line in String::from_utf8_lossy(&output.stdout).to_string().lines() {
         if let Some(m) = color.find(&line) {
-            let mut result = String::new();
-            result.push_str(m.as_str());
-            results.push(result.to_string())
+            let mut c_vec = Vec::new();
+            
+            for cap in rgb_num.captures_iter(m.as_str()) {
+                c_vec.push(*&cap[0].parse::<u8>().unwrap())
+            }
+
+            let color = Color::Rgb(c_vec[0], c_vec[1], c_vec[2]);
+            results.push(color)
         }
     }
 
     results
 }
 
-fn gen_blocks() {
-
+fn gen_block(color: Color) {
+            let mut stdout = StandardStream::stdout(ColorChoice::Always);
+            stdout.set_color(ColorSpec::new().set_fg(Some(color))).unwrap();
+            writeln!(&mut stdout, "██████    ").unwrap();
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
@@ -59,7 +68,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     println!("Here are your colors:");
     for color in results {
-        println!("{}", color);
+         gen_block(color);
     }
 
     Ok(())
@@ -71,8 +80,6 @@ mod tests {
 
     #[test]
     fn test_output() {
-        let config = Config { filename: "Farr-Peter-Headshot.jpg".to_string()  };
 
-        assert_eq!(gen_colors(config), vec!["#1D2C08", "#24580E", "#55403B", "#579047", "#9C6F5C", "#AF9171", "#84A48F", "#C7BFAD"]);
     }
 }
