@@ -1,11 +1,11 @@
 extern crate regex;
 extern crate termcolor;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use regex::Regex;
 use std::error::Error;
-use std::{fs, env};
 use std::io::Write;
 use std::process::Command;
-use regex::Regex;
+use std::{env, fs};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 pub struct Config {
     pub filename: String,
@@ -44,7 +44,7 @@ fn gen_colors(filename: &str) -> Vec<Color> {
     for line in String::from_utf8_lossy(&output.stdout).to_string().lines() {
         if let Some(m) = color.find(&line) {
             let mut c_vec = Vec::new();
-            
+
             for cap in rgb_num.captures_iter(m.as_str()) {
                 c_vec.push(*&cap[0].parse::<u8>().unwrap())
             }
@@ -57,19 +57,24 @@ fn gen_colors(filename: &str) -> Vec<Color> {
     results
 }
 
-fn gen_block(color: Color) {
-            let mut stdout = StandardStream::stdout(ColorChoice::Always);
-            stdout.set_color(ColorSpec::new().set_fg(Some(color))).unwrap();
-            writeln!(&mut stdout, "██████    ").unwrap();
+fn gen_blocks_line(colors: &Vec<Color>) {
+    for color in colors {
+        let mut stdout = StandardStream::stdout(ColorChoice::Always);
+        stdout
+            .set_color(ColorSpec::new().set_fg(Some(*color)))
+            .unwrap();
+        write!(&mut stdout, "██████    ").unwrap();
+    }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let results = gen_colors(&config.filename);
+    let colors = gen_colors(&config.filename);
 
     println!("Here are your colors:");
-    for color in results {
-         gen_block(color);
-    }
+        for _ in 0..4 {
+            gen_blocks_line(&colors);
+            println!("");
+        }
 
     Ok(())
 }
@@ -79,7 +84,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_output() {
-
-    }
+    fn test_output() {}
 }
