@@ -1,0 +1,9 @@
+[package]
+name = "colors"
+version = "0.1.0"
+authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
+edition = "2018"
+
+[dependencies]
+magick_rust = "0.10.0"
+regex = "1.1.0"
