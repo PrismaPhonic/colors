@@ -10,6 +10,10 @@ in the terminal as colors blocks.
 
 You use it like such `colors image.jpg`. See the associated gif:
 
+Note: I forked magick-rust because it's get_histogram function didn't let you
+pass in a color limit which makes the function useless. If you want to use this
+color application pull in my fork of magick-rust!
+
 ![](colors.gif)
 
 ## TODOS
